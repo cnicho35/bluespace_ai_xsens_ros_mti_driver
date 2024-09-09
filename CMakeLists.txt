@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.8)
 project(bluespace_ai_xsens_mti_driver)
 
 cmake_policy(SET CMP0057 NEW)
@@ -21,20 +21,26 @@ find_package(sensor_msgs REQUIRED)
 ## Build ##
 ###########
 
-link_directories(lib/xspublic/xscontroller lib/xspublic/xscommon lib/xspublic/xstypes)
-add_executable(
-	xsens_mti_node
-	src/main.cpp
-	src/xdainterface.cpp
-	src/xdacallback.cpp
+add_custom_target(BuildLib
+    COMMAND ${CMAKE_COMMAND} -E echo "Building library in lib/xspublic"
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/lib/xspublic ${CMAKE_MAKE_PROGRAM}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/lib/xspublic
+    COMMENT "Building library in lib/xspublic"
 )
 
-add_custom_command(
-  TARGET xsens_mti_node
-  PRE_LINK
-  COMMAND make
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/xspublic
+link_directories(${CMAKE_SOURCE_DIR}/lib/xspublic/xscontroller 
+    ${CMAKE_SOURCE_DIR}/lib/xspublic/xscommon 
+    ${CMAKE_SOURCE_DIR}/lib/xspublic/xstypes
 )
+
+add_executable(
+    xsens_mti_node
+    src/main.cpp
+    src/xdainterface.cpp
+    src/xdacallback.cpp
+)
+
+add_dependencies(xsens_mti_node BuildLib)
 
 target_include_directories(xsens_mti_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/xspublic>
@@ -50,12 +56,12 @@ ament_target_dependencies(xsens_mti_node
 )
 
 target_link_libraries(
-	xsens_mti_node
-	xscontroller
-	xscommon
-	xstypes
-	pthread
-	dl
+    xsens_mti_node
+    xscontroller
+    xscommon
+    xstypes
+    pthread
+    dl
 )
 
 install(TARGETS xsens_mti_node
@@ -69,12 +75,6 @@ install(DIRECTORY launch param rviz urdf
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # uncomment the line when a copyright and license is not present in all source files
-  #set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # uncomment the line when this package is not in a git repo
-  #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 
