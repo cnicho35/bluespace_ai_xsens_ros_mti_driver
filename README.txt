@@ -126,6 +126,19 @@ Notes:
 
         When having problems with the device being busy the first 20 seconds after
         plugin, purge the modemmanager application.
+    
+    - The device shows up in lsusb but not as a /dev/ttyUSB*
+
+        You may need to manually install the linux driver for xsens_mt. 
+        
+            git clone https://github.com/xsens/xsens_mt
+            cd xsens_mt
+            make
+            sudo cp xsens_mt.ko /lib/modules/$(uname -r)/kernel/drivers/
+            sudo depmod -a
+            reboot
+
+
 
 Acknowledgement:
     Thank you to Steven Gies and his engineering team at Xsens Technologies for testing this driver against their complete MTi IMU product portfolio and reviewing the driver source.
